@@ -1,10 +1,12 @@
+```text
 memory/
 ├── app/
-│ ├── **init**.py
-│ ├── main.py
-│ └── routes/
-│ ├── **init**.py
-│ └── users.py
+│   ├── __init__.py
+│   ├── main.py
+│   └── routes/
+│       ├── __init__.py
+│       └── users.py
 ├── .env
 ├── requirements.txt
 └── .gitignore
+```
