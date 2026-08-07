@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, HTTPException
 
 from app.services import documentService
 
@@ -11,8 +11,11 @@ router = APIRouter(
 # Upload a document
 @router.post("/")
 async def Upload_Documents(file: UploadFile = File(...)):
-    saved_file = await documentService.save(file)
-    return {"message": "upload complete", "file": saved_file}
+    try:
+        saved_file = await documentService.save(file)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"message": "upload complete", "file": saved_file, "markdown": saved_file["markdown"]}
 
 # Get Document
 @router.get("/{doc_id}")
