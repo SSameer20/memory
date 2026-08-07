@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from app.api.router import api_router
+
 
 app = FastAPI(
     title="Memory",
@@ -6,10 +8,18 @@ app = FastAPI(
 )
 
 
+app.include_router(api_router)
 
 @app.get("/")
 async def home():
     return {
-        "message": "FastAPI is running 🚀"
+        "message": "App is running 🚀"
+    }
+
+
+@app.get("/health")
+async def Health():
+    return {
+        "message": "Health Check"
     }
 
