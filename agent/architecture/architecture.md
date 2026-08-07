@@ -625,3 +625,35 @@ Phase 4
 - Event-driven ingestion
 - Multi-region deployment
 - Enterprise access control
+
+```text
+app/
+│
+├── api/
+│
+├── services/
+│   ├── ingestion.py
+│   ├── retrieval.py
+│   ├── parser.py
+│   ├── embedding.py
+│   ├── reranker.py
+│   └── citations.py
+│
+├── workers/
+│
+├── models/
+│
+├── repositories/
+│
+├── database/
+│
+├── vectordb/
+│
+├── storage/
+│
+├── cache/
+│
+├── queues/
+│
+└── utils/
+```
