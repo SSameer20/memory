@@ -174,49 +174,19 @@ class StructuralChunker:
     def _approx_tokens(self, text: str) -> int:
         return max(1, len(text.split()))
 
-    def _flush_buffer(
-        self,
-        *,
-        doc_id: str,
-        parent_chunk_id: str | None,
-        buffer: list[AstNode],
-        chunk_order: int,
-        heading_path: list[str],
-    ) -> Chunk:
-        text = "\n\n".join(self._serialize_node(node) for node in buffer if self._serialize_node(node))
-        pages = sorted({page for node in buffer for page in node.pages})
-        element_types = [node.element_type for node in buffer]
-        source_ids = [node.node_id for node in buffer]
-
-        meta = ChunkMeta(
-            chunk_id=str(uuid4()),
-            doc_id=doc_id,
-            parent_chunk_id=parent_chunk_id,
-            chunk_order=chunk_order,
-            section=heading_path[0] if heading_path else None,
-            subsection=heading_path[1] if len(heading_path) > 1 else None,
-            heading_path=heading_path.copy(),
-            page_numbers=pages,
-            page_start=min(pages) if pages else None,
-            page_end=max(pages) if pages else None,
-            element_types=element_types,
-            source_node_ids=source_ids,
-            token_count=self._approx_tokens(text),
-            char_count=len(text),
-            chunk_type="content",
-        )
-        return Chunk(text=text, meta=meta)
-
-    def _make_atomic_chunk(
+    def _make_chunk(
         self,
         *,
         doc_id: str,
         node: AstNode,
+        text: str,
         parent_chunk_id: str | None,
+        chunk_type: str,
         chunk_order: int,
         heading_path: list[str],
+        element_types: list[str],
+        source_node_ids: list[str],
     ) -> Chunk:
-        text = self._serialize_node(node)
         pages = node.pages.copy()
         meta = ChunkMeta(
             chunk_id=str(uuid4()),
@@ -229,13 +199,64 @@ class StructuralChunker:
             page_numbers=pages,
             page_start=min(pages) if pages else None,
             page_end=max(pages) if pages else None,
-            element_types=[node.element_type],
-            source_node_ids=[node.node_id],
+            element_types=element_types,
+            source_node_ids=source_node_ids,
             token_count=self._approx_tokens(text),
             char_count=len(text),
-            chunk_type=node.kind.value,
+            chunk_type=chunk_type,
         )
         return Chunk(text=text, meta=meta)
+
+    def _flush_buffer(
+        self,
+        *,
+        doc_id: str,
+        parent_chunk_id: str | None,
+        buffer: list[AstNode],
+        chunk_order: int,
+        heading_path: list[str],
+    ) -> Chunk:
+        text = "\n\n".join(self._serialize_node(node) for node in buffer if self._serialize_node(node))
+        pages = sorted({page for node in buffer for page in node.pages})
+        fake_node = AstNode(
+            node_id=str(uuid4()),
+            kind=NodeKind.paragraph,
+            element_type="buffer",
+            pages=pages,
+        )
+        return self._make_chunk(
+            doc_id=doc_id,
+            node=fake_node,
+            text=text,
+            parent_chunk_id=parent_chunk_id,
+            chunk_type="content",
+            chunk_order=chunk_order,
+            heading_path=heading_path,
+            element_types=[node.element_type for node in buffer],
+            source_node_ids=[node.node_id for node in buffer],
+        )
+
+    def _make_atomic_chunk(
+        self,
+        *,
+        doc_id: str,
+        node: AstNode,
+        parent_chunk_id: str | None,
+        chunk_order: int,
+        heading_path: list[str],
+    ) -> Chunk:
+        text = self._serialize_node(node)
+        return self._make_chunk(
+            doc_id=doc_id,
+            node=node,
+            text=text,
+            parent_chunk_id=parent_chunk_id,
+            chunk_type=node.kind.value,
+            chunk_order=chunk_order,
+            heading_path=heading_path,
+            element_types=[node.element_type],
+            source_node_ids=[node.node_id],
+        )
 
     def _link_children(self, chunks: list[Chunk]) -> None:
         by_parent: dict[str, list[str]] = {}

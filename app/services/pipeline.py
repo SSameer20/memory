@@ -128,18 +128,32 @@ class DocumentPipeline:
                 text = "\n".join(line.rstrip() for line in text.splitlines()).strip()
                 if not text:
                     continue
-                node = AstNode(
+                section = AstNode(
                     node_id=str(uuid4()),
-                    kind=NodeKind.paragraph,
-                    element_type="PdfPageText",
-                    text=text,
+                    kind=NodeKind.section,
+                    element_type="PdfPage",
+                    text=f"Page {index + 1}",
+                    title=f"Page {index + 1}",
                     pages=[index + 1],
                     page_start=index + 1,
                     page_end=index + 1,
                     heading_path=[f"Page {index + 1}"],
                     metadata={"page": index + 1, "source": "pdfium_text"},
                 )
-                root.children.append(node)
+                section.children.append(
+                    AstNode(
+                        node_id=str(uuid4()),
+                        kind=NodeKind.paragraph,
+                        element_type="PdfPageText",
+                        text=text,
+                        pages=[index + 1],
+                        page_start=index + 1,
+                        page_end=index + 1,
+                        heading_path=[f"Page {index + 1}"],
+                        metadata={"page": index + 1, "source": "pdfium_text"},
+                    )
+                )
+                root.children.append(section)
         finally:
             pdf.close()
         return root
