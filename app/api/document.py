@@ -15,7 +15,11 @@ async def Upload_Documents(file: UploadFile = File(...)):
         saved_file = await documentService.save(file)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return {"message": "upload complete", "file": saved_file, "markdown": saved_file["markdown"]}
+    return {
+        "message": "upload complete",
+        "file": saved_file,
+        "markdown_preview": saved_file["markdown_preview"],
+    }
 
 # Get Document
 @router.get("/{doc_id}")
