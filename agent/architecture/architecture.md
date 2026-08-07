@@ -630,30 +630,35 @@ Phase 4
 app/
 │
 ├── api/
+│   ├── document.py
+│   ├── search.py
+│   └── health.py
 │
 ├── services/
-│   ├── ingestion.py
-│   ├── retrieval.py
-│   ├── parser.py
-│   ├── embedding.py
-│   ├── reranker.py
-│   └── citations.py
+│   ├── ingestion_service.py
+│   ├── retrieval_service.py
+│   ├── embedding_service.py
+│   ├── parser_service.py
+│   ├── chunking_service.py
+│   └── citation_service.py
 │
-├── workers/
+├── repositories/
+│   ├── document_repository.py
+│   ├── chunk_repository.py
+│   └── embedding_repository.py
 │
 ├── models/
 │
-├── repositories/
+├── schemas/
 │
-├── database/
+├── interfaces/
+│   ├── parser.py
+│   ├── embedder.py
+│   └── vectordb.py
 │
-├── vectordb/
+├── core/
+│   ├── database.py
+│   └── config.py
 │
-├── storage/
-│
-├── cache/
-│
-├── queues/
-│
-└── utils/
+└── workers/
 ```
