@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from uuid import uuid4
 
 import pypdfium2 as pdfium
 from docling.datamodel.base_models import InputFormat
@@ -113,13 +112,7 @@ class DocumentPipeline:
         return None, "pdfium_text"
 
     def _build_fallback_ast(self, *, pdf_path: Path, document_id: str, filename: str) -> AstNode:
-        root = AstNode(
-            node_id=document_id,
-            kind=NodeKind.document,
-            element_type="document",
-            title=filename,
-            metadata={"filename": filename, "source": "pdfium_text"},
-        )
+        pages: list[tuple[int, str]] = []
         pdf = pdfium.PdfDocument(str(pdf_path))
         try:
             for index in range(len(pdf)):
@@ -128,35 +121,14 @@ class DocumentPipeline:
                 text = "\n".join(line.rstrip() for line in text.splitlines()).strip()
                 if not text:
                     continue
-                section = AstNode(
-                    node_id=str(uuid4()),
-                    kind=NodeKind.section,
-                    element_type="PdfPage",
-                    text=f"Page {index + 1}",
-                    title=f"Page {index + 1}",
-                    pages=[index + 1],
-                    page_start=index + 1,
-                    page_end=index + 1,
-                    heading_path=[f"Page {index + 1}"],
-                    metadata={"page": index + 1, "source": "pdfium_text"},
-                )
-                section.children.append(
-                    AstNode(
-                        node_id=str(uuid4()),
-                        kind=NodeKind.paragraph,
-                        element_type="PdfPageText",
-                        text=text,
-                        pages=[index + 1],
-                        page_start=index + 1,
-                        page_end=index + 1,
-                        heading_path=[f"Page {index + 1}"],
-                        metadata={"page": index + 1, "source": "pdfium_text"},
-                    )
-                )
-                root.children.append(section)
+                pages.append((index + 1, text))
         finally:
             pdf.close()
-        return root
+        ast = self.structure_extractor.build_ast_from_pages(
+            pages, document_id=document_id, filename=filename
+        )
+        ast.metadata["source"] = "pdfium_text"
+        return ast
 
     def _count_sections(self, ast: AstNode) -> int:
         return sum(1 for node in self._walk(ast) if node.kind in {NodeKind.section, NodeKind.subsection})
