@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 app = FastAPI(
-    title="My First FastAPI",
+    title="Memory",
     version="1.0.0"
 )
 
