@@ -10,7 +10,7 @@ app = FastAPI(
 @app.get("/")
 async def home():
     return {
-        "message": "App is running 🚀"
+        "message": "Memory is running 🚀"
     }
 
 

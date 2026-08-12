@@ -1,2 +1,6 @@
+#secrets
+.env
+
+
 __pycache__
 storage
