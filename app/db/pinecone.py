@@ -1,17 +1,36 @@
 from pinecone import Pinecone, ServerlessSpec
 
-pc = Pinecone(api_key="********-****-****-****-************")
-index_name = "developer-quickstart-py"
+from lib.config import config
 
-if not pc.has_index(index_name):
-    pc.create_index_for_model(
-        name=index_name,
-        cloud="aws",
-        region="us-east-1",
-        embed={
-            "model":"llama-text-embed-v2",
-            "field_map":{"text": "chunk_text"}
-        }
-    )
-    from pinecone import Pinecone
 
+class VectorService:
+
+    def __init__(self, api_key, index_name):
+        self.pc = Pinecone(
+            api_key=api_key
+        )
+
+        self.index_name = index_name
+
+        self._ensure_index()
+
+        self.index = self.pc.Index(self.index_name)
+
+    def _ensure_index(self):
+        if not self.pc.has_index(self.index_name):
+            self.pc.create_index(
+            name=self.index_name,
+            dimension=1536,
+            metric="cosine",
+            spec=ServerlessSpec(
+                cloud="aws",
+                region="us-east-1"
+                )
+            )
+            tags={
+                    "environment": config.app.environment
+            }
+
+    
+
+vector_service = VectorService(config.pinecone.api_key, config.pinecone.profile_index)

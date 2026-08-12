@@ -16,11 +16,15 @@ class DatabaseConfig:
     def __init__(self):
         self.url: str = os.environ["DATABASE_URL"]
 
+class AppConfig:
+    def __init__(self):
+        self.environment: str = os.getenv("ENVIRONMENT", "development")
 
 class Config:
     def __init__(self):
         self.pinecone = PineconeConfig()
         self.database = DatabaseConfig()
+        self.app = AppConfig()
 
 
 config = Config()
