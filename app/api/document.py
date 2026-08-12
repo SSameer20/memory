@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 
-from app.services import documentService
+from app.services.document import document as documentService
 
 router = APIRouter(
     prefix="/document",
